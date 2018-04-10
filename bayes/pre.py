@@ -166,7 +166,15 @@ def word_stat(test_dic_stat, spam_dic_stat, norm_dic_stat, norm_num_stat, spam_n
         if words_stat not in spam_dic_stat.keys() and words_stat not in norm_dic_stat.keys():
             word_prob_dic.setdefault(words_stat, 0.4)
     # print(word_prob_dic)
-    # sorted(word_prob_dic.items(), key=lambda d: d[1], reverse=True)[0:15]
+    temp_dic_dic = sorted(word_prob_dic.items(), key=lambda d: d[1], reverse=True)[0:15]
+    # j_dic = 0
+    #print(word_prob_dic)
+    word_prob_dic.clear()
+    for i_dic in temp_dic_dic:
+        # print(i_dic[0],i_dic[1])
+        word_prob_dic[i_dic[0]] = i_dic[1]
+        # j_dic += 1
+    # print(temp_dic_dic)
     # print(word_prob_dic)
     return word_prob_dic
 
@@ -252,29 +260,6 @@ if __name__ == '__main__':
 根目录
 ./20_newsgroups
 ./email
-"""
-"""
-20_newsgroups
-./20_newsgroups/alt.atheism
-./20_newsgroups/comp.graphics
-./20_newsgroups/comp.os.ms-windows.misc
-./20_newsgroups/comp.sys.ibm.pc.hardware
-./20_newsgroups/comp.sys.mac.hardware
-./20_newsgroups/comp.windows.x
-./20_newsgroups/misc.forsale
-./20_newsgroups/rec.autos
-./20_newsgroups/rec.motorcycles
-./20_newsgroups/rec.sport.baseball
-./20_newsgroups/rec.sport.hockey
-./20_newsgroups/sci.crypt
-./20_newsgroups/sci.electronics
-./20_newsgroups/sci.med
-./20_newsgroups/sci.space
-./20_newsgroups/soc.religion.christian
-./20_newsgroups/talk.politics.guns
-./20_newsgroups/talk.politics.mideast
-./20_newsgroups/talk.politics.misc
-./20_newsgroups/talk.religion.misc
 """
 """
 email
