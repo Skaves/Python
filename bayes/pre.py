@@ -1,5 +1,6 @@
 import nltk
 import os
+import sys
 from nltk.stem import SnowballStemmer
 from nltk.corpus import stopwords
 path_default = './email/spam'
@@ -28,7 +29,7 @@ def save_to_file(file_name_stf, contents_stf):
     fh_stf.close()
 
 
-def adjoin(c_adjoin, save_name_ad):
+def adjoin(c_adjoin, save_name_ad, path_adj):
     temp_adjoin_list = []
     num_adjoin = len(c_adjoin)
     for i_adjoin in range(0, num_adjoin):
@@ -37,12 +38,12 @@ def adjoin(c_adjoin, save_name_ad):
         temp_adjoin_list.append(j_adjoin_2)
     temp_adjoin_str = ' '.join(temp_adjoin_list)
     # save_to_file('step1_adjoin.txt', temp_adjoin_str)
-    save_to_file('step1_adjoin_'+save_name_ad, temp_adjoin_str)
+    save_to_file(path_adj+'step1_adjoin_'+save_name_ad, temp_adjoin_str)
 
 
-def step_1_adjoin(path_step_1, s1_name_s1):
+def step_1_adjoin(path_step_1, s1_name_s1, path_s1adj):
     path_2_step_1 = each_file(path_step_1)
-    adjoin(path_2_step_1, s1_name_s1)
+    adjoin(path_2_step_1, s1_name_s1, path_s1adj)
 
 
 def eme_tokenize(str_ori_tokenize):
@@ -190,22 +191,42 @@ def bayes_cal(test_dic_bc):
     return p_final_bc
 
 
-def preprocessing(path_pre, name_pre):
-    save_to_file('dictionary_numb_'+name_pre, '')
-    save_to_file('dictionary_word_'+name_pre, '')
-    step_1_adjoin(path_pre, name_pre)
-    step_2_clean(('step1_adjoin_'+name_pre), ('step2_cleaner_'+name_pre))
-    step_3_stem(('step2_cleaner_'+name_pre), ('step3_stemming_'+name_pre))
-    step_4_sw(('step3_stemming_'+name_pre), ('step4_stopwords_'+name_pre))
-    add_to_dic('step4_stopwords_'+name_pre, 'dictionary_word_'+name_pre, 'dictionary_numb_'+name_pre)
+def preprocessing(path_pre, name_pre, choice_pre):
+    file_path_pre = './'+name_pre+'_process/'
+    if choice_pre == '1':
+        save_to_file(file_path_pre+'dictionary_numb_' + name_pre, '')
+        save_to_file(file_path_pre+'dictionary_word_' + name_pre, '')
+        step_1_adjoin(path_pre, name_pre, file_path_pre)
+        step_2_clean((file_path_pre+'step1_adjoin_' + name_pre), (file_path_pre+'step2_cleaner_' + name_pre))
+        step_3_stem((file_path_pre+'step2_cleaner_' + name_pre), (file_path_pre+'step3_stemming_' + name_pre))
+        step_4_sw((file_path_pre+'step3_stemming_' + name_pre), (file_path_pre+'step4_stopwords_' + name_pre))
+        add_to_dic(file_path_pre+'step4_stopwords_' + name_pre, file_path_pre+'dictionary_word_' + name_pre, file_path_pre+'dictionary_numb_' + name_pre)
+        """
+        save_to_file('dictionary_numb_'+name_pre, '')
+        save_to_file('dictionary_word_'+name_pre, '')
+        step_1_adjoin(path_pre, name_pre)
+        step_2_clean(('step1_adjoin_'+name_pre), ('step2_cleaner_'+name_pre))
+        step_3_stem(('step2_cleaner_'+name_pre), ('step3_stemming_'+name_pre))
+        step_4_sw(('step3_stemming_'+name_pre), ('step4_stopwords_'+name_pre))
+        add_to_dic('step4_stopwords_'+name_pre, 'dictionary_word_'+name_pre, 'dictionary_numb_'+name_pre)
+        """
+    else:
+        save_to_file(file_path_pre + 'dictionary_numb_' + name_pre, '')
+        save_to_file(file_path_pre + 'dictionary_word_' + name_pre, '')
+        step_1_adjoin(path_pre, name_pre, file_path_pre)
+        step_2_clean((file_path_pre + 'step1_adjoin_' + name_pre), (file_path_pre + 'step2_cleaner_' + name_pre))
+        step_3_stem((file_path_pre + 'step2_cleaner_' + name_pre), (file_path_pre + 'step3_stemming_' + name_pre))
+        step_4_sw((file_path_pre + 'step3_stemming_' + name_pre), (file_path_pre + 'step4_stopwords_' + name_pre))
+        add_to_dic(file_path_pre + 'step4_stopwords_' + name_pre, file_path_pre + 'dictionary_word_' + name_pre,
+                   file_path_pre + 'dictionary_numb_' + name_pre)
     # step_2_clean('step1_adjoin.txt', 'step2_cleaner.txt')
     # step_3_stem('step2_cleaner.txt', 'step3_stemming.txt')
     # add_to_dic('step4_stopwords', 'dictionary_word', 'dictionary_numb')
 
 
-def read_dic(dic_name_rd):
-    dic_rd = eme_tokenize(read_from_file('dictionary_word_'+dic_name_rd))
-    din_rd = eme_tokenize(read_from_file('dictionary_numb_'+dic_name_rd))
+def read_dic(dic_path_rd, dic_name_rd):
+    dic_rd = eme_tokenize(read_from_file(dic_path_rd+'dictionary_word_'+dic_name_rd))
+    din_rd = eme_tokenize(read_from_file(dic_path_rd+'dictionary_numb_'+dic_name_rd))
     dictionary_rd = {}
     t_rd = 0
     for i_rd in dic_rd:
@@ -219,16 +240,17 @@ def get_file_list(file_path_gfl):
     return file_name_gfl
 
 
-def cal_main():
-    preprocessing('./email/spam', 'spam')
-    preprocessing('./email/ham', 'norm')
+def cal_main(choice_cal):
+    if choice_cal == '1':
+        preprocessing('./email/spam', 'spam', '1')
+        preprocessing('./email/ham', 'norm', '1')
     # spam_main_dic = {}
     # norm_main_dic = {}
     # test_main_dic
-    spam_main_dic = read_dic('spam')
-    norm_main_dic = read_dic('norm')
-    preprocessing('./test', 'test')
-    test_main_dic = read_dic('test')
+    spam_main_dic = read_dic('./spam_process/', 'spam')
+    norm_main_dic = read_dic('./norm_process/', 'norm')
+    preprocessing('./test', 'test', '2')
+    test_main_dic = read_dic('./test_process/', 'test')
     test_re_main = word_stat(test_main_dic, spam_main_dic, norm_main_dic, len(get_file_list('./email/spam')),
                              len(get_file_list('./email/ham')))
     if bayes_cal(test_re_main) > 0.9:
@@ -249,18 +271,14 @@ def cal_main():
 
 
 if __name__ == '__main__':
-    cal_main()
+    choice_main = input('1:重新编辑字典\n2:使用原有字典\n')
+    cal_main(choice_main)
 
 
 
 
 
 
-"""
-根目录
-./20_newsgroups
-./email
-"""
 """
 email
 ./email/ham
