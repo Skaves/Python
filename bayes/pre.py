@@ -1,12 +1,10 @@
 import nltk
 import os
-import sys
 import random2
 import shutil
 from nltk.stem import SnowballStemmer
 from nltk.corpus import stopwords
 path_default = './email/spam'
-# path_default = 'C:\\Users\\hasee\\PycharmProjects\\preprocessing\\email\\spam'
 default_encoding = 'utf-8'
 
 
@@ -246,7 +244,7 @@ def cal_main(choice_cal):
             sp2no_cm += 1
     total_cm = right_cm + no2sp_cm + sp2no_cm
     print('正确率：', right_cm/total_cm*100, '%\n未能拦截垃圾邮件概率:', sp2no_cm/total_cm*100, '%\n错误拦截正常邮件概率：', no2sp_cm/total_cm, '%')
-    return right_cm/total_cm*100
+    # return right_cm/total_cm*100
 
 
 def test_cal(file_name_tc, spam_dic_tc, norm_dic_tc):
@@ -314,14 +312,14 @@ def sampling():
 
 
 if __name__ == '__main__':
-    # choice_main = input('1:重新编辑字典\n2:使用原有字典\n')
-    # cal_main(choice_main)
-    sum_main_stat = 0
-    for i in range(1, 101):
-        print(i)
-        sum_main_stat += cal_main('1')
-    print(sum_main_stat)
-    print(sum_main_stat/100)
+    choice_main = input('1:重新编辑字典\n2:使用原有字典\n')
+    cal_main(choice_main)
+    # sum_main_stat = 0
+    # for i in range(1, 101):
+    #     print(i)
+    #     sum_main_stat += cal_main('1')
+    # print(sum_main_stat)
+    # print(sum_main_stat/100)
 
 
 
@@ -329,36 +327,15 @@ if __name__ == '__main__':
 
 
 
-"""
-根目录
-./20_newsgroups
-./email
-"""
-"""
-20_newsgroups
-./20_newsgroups/alt.atheism
-./20_newsgroups/comp.graphics
-./20_newsgroups/comp.os.ms-windows.misc
-./20_newsgroups/comp.sys.ibm.pc.hardware
-./20_newsgroups/comp.sys.mac.hardware
-./20_newsgroups/comp.windows.x
-./20_newsgroups/misc.forsale
-./20_newsgroups/rec.autos
-./20_newsgroups/rec.motorcycles
-./20_newsgroups/rec.sport.baseball
-./20_newsgroups/rec.sport.hockey
-./20_newsgroups/sci.crypt
-./20_newsgroups/sci.electronics
-./20_newsgroups/sci.med
-./20_newsgroups/sci.space
-./20_newsgroups/soc.religion.christian
-./20_newsgroups/talk.politics.guns
-./20_newsgroups/talk.politics.mideast
-./20_newsgroups/talk.politics.misc
-./20_newsgroups/talk.religion.misc
-"""
+
 """
 email
 ./email/ham
 ./email/spam
+./email/src
+"""
+"""
+src
+./email/src/50
+./email/src/50k
 """
