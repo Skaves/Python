@@ -4,7 +4,6 @@ import random2
 import shutil
 from nltk.stem import SnowballStemmer
 from nltk.corpus import stopwords
-path_default = './email/spam'
 default_encoding = 'utf-8'
 
 
@@ -279,20 +278,17 @@ def sampling():
     norm_list_main = each_file('./email/src/50k/ham')
     spam_list_main = each_file('./email/src/50k/spam')
     num = int(min(len(norm_list_main), len(spam_list_main))*0.96)
-    totest_sam = num//10
-    sample_sam = num-totest_sam
-    totest_spam_sample_sam = totest_sam//2
-    totest_norm_sample_sam = totest_sam-totest_spam_sample_sam
-    train_spam_sample_sam = sample_sam//2
-    train_norm_sample_sam = sample_sam - train_spam_sample_sam
-    totest_spam_list_sam = random2.sample(spam_list_main, totest_spam_sample_sam)
-    totest_norm_list_sam = random2.sample(norm_list_main, totest_norm_sample_sam)
+    totest_sample_sam = num // 10
+    train_sample_sam = num - totest_sample_sam
+    print(totest_sample_sam, train_sample_sam)
+    totest_spam_list_sam = random2.sample(spam_list_main, totest_sample_sam)
+    totest_norm_list_sam = random2.sample(norm_list_main, totest_sample_sam)
     for i_sam in totest_spam_list_sam:
         spam_list_main.remove(i_sam)
     for i_sam in totest_norm_list_sam:
         norm_list_main.remove(i_sam)
-    train_spam_list_sam = random2.sample(spam_list_main, train_spam_sample_sam)
-    train_norm_list_sam = random2.sample(norm_list_main, train_norm_sample_sam)
+    train_spam_list_sam = random2.sample(spam_list_main, train_sample_sam)
+    train_norm_list_sam = random2.sample(norm_list_main, train_sample_sam)
     shutil.rmtree('./email/ham')
     shutil.rmtree('./email/spam')
     os.mkdir('./email/ham')
@@ -320,10 +316,6 @@ if __name__ == '__main__':
     #     sum_main_stat += cal_main('1')
     # print(sum_main_stat)
     # print(sum_main_stat/100)
-
-
-
-
 
 
 
