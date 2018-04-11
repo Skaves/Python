@@ -243,7 +243,7 @@ def cal_main(choice_cal):
             sp2no_cm += 1
     total_cm = right_cm + no2sp_cm + sp2no_cm
     print('正确率：', right_cm/total_cm*100, '%\n未能拦截垃圾邮件概率:', sp2no_cm/total_cm*100, '%\n错误拦截正常邮件概率：', no2sp_cm/total_cm, '%')
-    # return right_cm/total_cm*100
+    return right_cm/total_cm*100
 
 
 def test_cal(file_name_tc, spam_dic_tc, norm_dic_tc):
@@ -280,7 +280,6 @@ def sampling():
     num = int(min(len(norm_list_main), len(spam_list_main))*0.96)
     totest_sample_sam = num // 10
     train_sample_sam = num - totest_sample_sam
-    print(totest_sample_sam, train_sample_sam)
     totest_spam_list_sam = random2.sample(spam_list_main, totest_sample_sam)
     totest_norm_list_sam = random2.sample(norm_list_main, totest_sample_sam)
     for i_sam in totest_spam_list_sam:
@@ -308,17 +307,16 @@ def sampling():
 
 
 if __name__ == '__main__':
-    choice_main = input('1:重新编辑字典\n2:使用原有字典\n')
-    cal_main(choice_main)
-    # sum_main_stat = 0
-    # for i in range(1, 101):
-    #     print(i)
-    #     sum_main_stat += cal_main('1')
-    # print(sum_main_stat)
-    # print(sum_main_stat/100)
-
-
-
+    mode = input('1:一次模拟\n2+:模拟次数\n')
+    if mode == '1':
+        choice_main = input('1:重新编辑字典\n2:使用原有字典\n')
+        cal_main(choice_main)
+    else:
+        sum_main_stat = 0
+        for i in range(1, 1+int(mode)):
+            print('第', i, '次')
+            sum_main_stat += cal_main('1')
+        print('平均准确率为', sum_main_stat/int(mode), '%')
 
 """
 email
