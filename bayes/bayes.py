@@ -242,7 +242,7 @@ def cal_main(choice_cal):
         else:
             sp2no_cm += 1
     total_cm = right_cm + no2sp_cm + sp2no_cm
-    print('正确率：', right_cm/total_cm*100, '%\n未能拦截垃圾邮件概率:', sp2no_cm/total_cm*100, '%\n错误拦截正常邮件概率：', no2sp_cm/total_cm, '%')
+    print('正确率：', right_cm/total_cm*100, '%\n未能拦截垃圾邮件概率:', sp2no_cm/total_cm*100, '%\n错误拦截正常邮件概率：', no2sp_cm/total_cm*100, '%')
     return right_cm/total_cm*100
 
 
