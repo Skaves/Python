@@ -1,9 +1,12 @@
 import nltk
 import os
 import sys
+import random2
+import shutil
 from nltk.stem import SnowballStemmer
 from nltk.corpus import stopwords
 path_default = './email/spam'
+# path_default = 'C:\\Users\\hasee\\PycharmProjects\\preprocessing\\email\\spam'
 default_encoding = 'utf-8'
 
 
@@ -80,6 +83,7 @@ def step_3_stem(file_name_s3_stem, save_name_s3_stem):
     else:
         str_ori_stem = file_name_s3_stem
     str_token_stem = eme_tokenize(str_ori_stem)
+    # print(str_token_stem)
     temp_str_stem = map(step_3_snowball, str_token_stem)
     temp_final_stem = ' '.join(temp_str_stem)
     if save_name_s3_stem == '1':
@@ -191,37 +195,16 @@ def bayes_cal(test_dic_bc):
     return p_final_bc
 
 
-def preprocessing(path_pre, name_pre, choice_pre):
+def preprocessing(path_pre, name_pre):
     file_path_pre = './'+name_pre+'_process/'
-    if choice_pre == '1':
-        save_to_file(file_path_pre+'dictionary_numb_' + name_pre, '')
-        save_to_file(file_path_pre+'dictionary_word_' + name_pre, '')
-        step_1_adjoin(path_pre, name_pre, file_path_pre)
-        step_2_clean((file_path_pre+'step1_adjoin_' + name_pre), (file_path_pre+'step2_cleaner_' + name_pre))
-        step_3_stem((file_path_pre+'step2_cleaner_' + name_pre), (file_path_pre+'step3_stemming_' + name_pre))
-        step_4_sw((file_path_pre+'step3_stemming_' + name_pre), (file_path_pre+'step4_stopwords_' + name_pre))
-        add_to_dic(file_path_pre+'step4_stopwords_' + name_pre, file_path_pre+'dictionary_word_' + name_pre, file_path_pre+'dictionary_numb_' + name_pre)
-        """
-        save_to_file('dictionary_numb_'+name_pre, '')
-        save_to_file('dictionary_word_'+name_pre, '')
-        step_1_adjoin(path_pre, name_pre)
-        step_2_clean(('step1_adjoin_'+name_pre), ('step2_cleaner_'+name_pre))
-        step_3_stem(('step2_cleaner_'+name_pre), ('step3_stemming_'+name_pre))
-        step_4_sw(('step3_stemming_'+name_pre), ('step4_stopwords_'+name_pre))
-        add_to_dic('step4_stopwords_'+name_pre, 'dictionary_word_'+name_pre, 'dictionary_numb_'+name_pre)
-        """
-    else:
-        save_to_file(file_path_pre + 'dictionary_numb_' + name_pre, '')
-        save_to_file(file_path_pre + 'dictionary_word_' + name_pre, '')
-        step_1_adjoin(path_pre, name_pre, file_path_pre)
-        step_2_clean((file_path_pre + 'step1_adjoin_' + name_pre), (file_path_pre + 'step2_cleaner_' + name_pre))
-        step_3_stem((file_path_pre + 'step2_cleaner_' + name_pre), (file_path_pre + 'step3_stemming_' + name_pre))
-        step_4_sw((file_path_pre + 'step3_stemming_' + name_pre), (file_path_pre + 'step4_stopwords_' + name_pre))
-        add_to_dic(file_path_pre + 'step4_stopwords_' + name_pre, file_path_pre + 'dictionary_word_' + name_pre,
-                   file_path_pre + 'dictionary_numb_' + name_pre)
-    # step_2_clean('step1_adjoin.txt', 'step2_cleaner.txt')
-    # step_3_stem('step2_cleaner.txt', 'step3_stemming.txt')
-    # add_to_dic('step4_stopwords', 'dictionary_word', 'dictionary_numb')
+    save_to_file(file_path_pre+'dictionary_numb_' + name_pre, '')
+    save_to_file(file_path_pre+'dictionary_word_' + name_pre, '')
+    step_1_adjoin(path_pre, name_pre, file_path_pre)
+    step_2_clean((file_path_pre+'step1_adjoin_' + name_pre), (file_path_pre+'step2_cleaner_' + name_pre))
+    step_3_stem((file_path_pre+'step2_cleaner_' + name_pre), (file_path_pre+'step3_stemming_' + name_pre))
+    step_4_sw((file_path_pre+'step3_stemming_' + name_pre), (file_path_pre+'step4_stopwords_' + name_pre))
+    add_to_dic(file_path_pre+'step4_stopwords_' + name_pre, file_path_pre+'dictionary_word_' + name_pre,
+               file_path_pre+'dictionary_numb_' + name_pre)
 
 
 def read_dic(dic_path_rd, dic_name_rd):
@@ -242,43 +225,138 @@ def get_file_list(file_path_gfl):
 
 def cal_main(choice_cal):
     if choice_cal == '1':
-        preprocessing('./email/spam', 'spam', '1')
-        preprocessing('./email/ham', 'norm', '1')
+        sampling()
+        preprocessing('./email/spam', 'spam')
+        preprocessing('./email/ham', 'norm')
     # spam_main_dic = {}
     # norm_main_dic = {}
     # test_main_dic
-    spam_main_dic = read_dic('./spam_process/', 'spam')
-    norm_main_dic = read_dic('./norm_process/', 'norm')
-    preprocessing('./test', 'test', '2')
+    # 0：正确 1：正常判断为垃圾 2：垃圾判断为正常
+    right_cm = 0
+    no2sp_cm = 0
+    sp2no_cm = 0
+    for i_cm in each_file('./test'):
+        temp_cm = test_cal(i_cm[7:], read_dic('./spam_process/', 'spam'), read_dic('./norm_process/', 'norm'))
+        # print(temp_cm)
+        if temp_cm == 0:
+            right_cm += 1
+        elif temp_cm == 1:
+            no2sp_cm += 1
+        else:
+            sp2no_cm += 1
+    total_cm = right_cm + no2sp_cm + sp2no_cm
+    print('正确率：', right_cm/total_cm*100, '%\n未能拦截垃圾邮件概率:', sp2no_cm/total_cm*100, '%\n错误拦截正常邮件概率：', no2sp_cm/total_cm, '%')
+    return right_cm/total_cm*100
+
+
+def test_cal(file_name_tc, spam_dic_tc, norm_dic_tc):
+    test_name_cal = os.path.split(''.join(each_file('./test/'+file_name_tc)))[0][7:11]
+    preprocessing('./test/' + file_name_tc, 'test')
     test_main_dic = read_dic('./test_process/', 'test')
-    test_re_main = word_stat(test_main_dic, spam_main_dic, norm_main_dic, len(get_file_list('./email/spam')),
+    test_re_main = word_stat(test_main_dic, spam_dic_tc, norm_dic_tc, len(get_file_list('./email/spam')),
                              len(get_file_list('./email/ham')))
     if bayes_cal(test_re_main) > 0.9:
-        print("超级瞄准已部署，垃圾邮件成功拦截")
-    else:
-        print("老铁没毛病")
-    '''
-    j_cm = 1
-    for i_cm in  range[0, 1]:        
-        preprocessing('./test', 'test'+str(j_cm))
-        test_main_dic = read_dic('test')
-        test_re_main = word_stat(test_main_dic, spam_main_dic, norm_main_dic, len(get_file_list('./email/spam')), len(get_file_list('./email/ham')))
-        if bayes_cal(test_re_main) > 0.9:
-            print("超级瞄准已部署，垃圾邮件成功拦截")
+        # print(file_name_tc+"超级瞄准已部署，垃圾邮件成功拦截")
+        # print(file_name_tc + "判断为垃圾邮件")
+        if test_name_cal == 'spam':
+            result_tc = 0
         else:
-            print("老铁没毛病")
-    '''
+            result_tc = 1
+    else:
+        # print("老铁没毛病")
+        # print(file_name_tc + "判断为正常邮件")
+        if test_name_cal == 'norm':
+            result_tc = 0
+        else:
+            result_tc = 2
+    return result_tc
+
+
+def file_path_split(file_path_fps):
+    final_fps = os.path.split(file_path_fps)
+    return final_fps
+
+
+def sampling():
+    norm_list_main = each_file('./email/src/50k/ham')
+    spam_list_main = each_file('./email/src/50k/spam')
+    num = int(min(len(norm_list_main), len(spam_list_main))*0.96)
+    totest_sam = num//10
+    sample_sam = num-totest_sam
+    totest_spam_sample_sam = totest_sam//2
+    totest_norm_sample_sam = totest_sam-totest_spam_sample_sam
+    train_spam_sample_sam = sample_sam//2
+    train_norm_sample_sam = sample_sam - train_spam_sample_sam
+    totest_spam_list_sam = random2.sample(spam_list_main, totest_spam_sample_sam)
+    totest_norm_list_sam = random2.sample(norm_list_main, totest_norm_sample_sam)
+    for i_sam in totest_spam_list_sam:
+        spam_list_main.remove(i_sam)
+    for i_sam in totest_norm_list_sam:
+        norm_list_main.remove(i_sam)
+    train_spam_list_sam = random2.sample(spam_list_main, train_spam_sample_sam)
+    train_norm_list_sam = random2.sample(norm_list_main, train_norm_sample_sam)
+    shutil.rmtree('./email/ham')
+    shutil.rmtree('./email/spam')
+    os.mkdir('./email/ham')
+    os.mkdir('./email/spam')
+    shutil.rmtree('./test')
+    os.mkdir('./test')
+    for i_sam in train_norm_list_sam:
+        shutil.copy(i_sam, './email/ham')
+    for i_sam in train_spam_list_sam:
+        shutil.copy(i_sam, './email/spam')
+    for i_sam in totest_norm_list_sam:
+        os.mkdir('./test/norm_'+os.path.split(i_sam)[1])
+        shutil.copy(i_sam, './test/norm_'+os.path.split(i_sam)[1])
+    for i_sam in totest_spam_list_sam:
+        os.mkdir('./test/spam_'+os.path.split(i_sam)[1])
+        shutil.copy(i_sam, './test/spam_' + os.path.split(i_sam)[1])
 
 
 if __name__ == '__main__':
-    choice_main = input('1:重新编辑字典\n2:使用原有字典\n')
-    cal_main(choice_main)
+    # choice_main = input('1:重新编辑字典\n2:使用原有字典\n')
+    # cal_main(choice_main)
+    sum_main_stat = 0
+    for i in range(1, 101):
+        print(i)
+        sum_main_stat += cal_main('1')
+    print(sum_main_stat)
+    print(sum_main_stat/100)
 
 
 
 
 
 
+
+"""
+根目录
+./20_newsgroups
+./email
+"""
+"""
+20_newsgroups
+./20_newsgroups/alt.atheism
+./20_newsgroups/comp.graphics
+./20_newsgroups/comp.os.ms-windows.misc
+./20_newsgroups/comp.sys.ibm.pc.hardware
+./20_newsgroups/comp.sys.mac.hardware
+./20_newsgroups/comp.windows.x
+./20_newsgroups/misc.forsale
+./20_newsgroups/rec.autos
+./20_newsgroups/rec.motorcycles
+./20_newsgroups/rec.sport.baseball
+./20_newsgroups/rec.sport.hockey
+./20_newsgroups/sci.crypt
+./20_newsgroups/sci.electronics
+./20_newsgroups/sci.med
+./20_newsgroups/sci.space
+./20_newsgroups/soc.religion.christian
+./20_newsgroups/talk.politics.guns
+./20_newsgroups/talk.politics.mideast
+./20_newsgroups/talk.politics.misc
+./20_newsgroups/talk.religion.misc
+"""
 """
 email
 ./email/ham
