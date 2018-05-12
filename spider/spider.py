@@ -25,12 +25,13 @@ for i in range(1, 26):
         test = requests.get('http://' + cc[2:])
         soup1 = BeautifulSoup(test.text, 'html.parser')
         news1 = soup1.select('.book-intro')
-        print(news.select('a')[1].text, news.select('a')[2].text, news.select('a')[3].text, news1[0].text.strip(),
-          news.select('span')[1].text, news.select('p')[2].text, news.select('a')[0]['href'])
-    '''
-    new1.append({'书名': news.select('a')[1].text, '作者': news.select('a')[2].text, '类型': news.select('a')[3].text,
-                    '连载状态': news.select('span')[1].text, '简介': news.select('p')[1].text,
+        # print(news.select('a')[1].text, news.select('a')[2].text, news.select('a')[3].text, news1[0].text.strip(),
+        #   news.select('span')[1].text, news.select('p')[2].text, news.select('a')[0]['href'])
+    
+        new1.append({'书名': news.select('a')[1].text, '作者': news.select('a')[2].text, '类型': news.select('a')[3].text,
+                    '连载状态': news.select('span')[1].text, '简介': news1[0].text.strip(),
                     '最新内容': news.select('p')[2].text, '链接': news.select('a')[0]['href']})
-    new2 = pandas.DataFrame(new1)
-new2.to_excel('qidian_rank1.xlsx ')
-'''
+new2 = pandas.DataFrame(new1)
+# print(new2)
+new2.to_excel('起点小说排行榜.xls')
+new1 = []
