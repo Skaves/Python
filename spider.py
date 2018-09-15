@@ -14,6 +14,7 @@ import os
 import re
 import sqlite3
 from pybloom_live import BloomFilter
+import shutil
 
 
 headers={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'}
@@ -26,11 +27,17 @@ num4 = 4
 num_total=num1+num2+num3+num4
 total_num=0
 requests.packages.urllib3.disable_warnings()
-
+DB_PATH = 'C:\\Users\\hasee\\Desktop\\spider\\apk.db'
 
 def guiguiguiguigui0():
-
-
+	if os.path.exists('C:\\Users\\hasee\\Desktop\\spider\\apk.db'):
+		os.remove('C:\\Users\\hasee\\Desktop\\spider\\apk.db')
+	if os.path.exists('C:\\Users\\hasee\\Desktop\\spider\\apk.bloom'):
+		os.remove('C:\\Users\\hasee\\Desktop\\spider\\apk.bloom')
+	if os.path.exists('C:\\Users\\hasee\\Desktop\\spider\\download'):
+		shutil.rmtree('C:\\Users\\hasee\\Desktop\\spider\\download',True)
+	os.mkdir('C:\\Users\\hasee\\Desktop\\spider\\download')
+	print('白茫茫一片真干净')
 
 def init():	
 	#数据库文件绝句路径
@@ -59,6 +66,8 @@ def init():
 		bf_i = BloomFilter(100000)
 		bf_i.tofile(open('C:\\Users\\hasee\\Desktop\\spider\\apk.bloom','wb+'))
 		print('初始化成功！')
+	else:
+		print('已进行过初始化')
 	conn.commit()
 	conn.close()
 
@@ -129,7 +138,7 @@ def download(url, file_path):
 
 				###这是下载实现进度显示####
 				done = int(50 * temp_size / total_size)
-				sys.stdout.write("\r数量：%d[%s%s] %d%%" % (total_num,'█' * done, '  ' * (50 - done), 100 * temp_size / total_size))
+				sys.stdout.write("\rAPK总数:%d[%s%s] %d%%" % (total_num,'█' * done, '  ' * (50 - done), 100 * temp_size / total_size))
 				sys.stdout.flush()
 	#sys.stdout.write("\r")
 	print()  # 避免上面\r 回车符
@@ -137,7 +146,7 @@ def download(url, file_path):
 
 def wandoujia():
 	#print("{0:{4}^5}\t丨{1:{4}^3}\t丨{2:{4}^3}\t丨{3:{4}^3}丨".format('名称','分类','下载量','好评率',chr(12288)))
-	print(myAlign('名称',num1)+'丨'+myAlign('分类',num2)+'丨'+myAlign('下载量',num3)+'丨'+myAlign('好评率',num4)+'丨')
+	#print(myAlign('名称',num1)+'丨'+myAlign('分类',num2)+'丨'+myAlign('下载量',num3)+'丨'+myAlign('好评率',num4)+'丨')
 	#print(myAlign('名称',num1_wandoujia),'\t丨',myAlign('分类',num2_wandoujia),'\t丨',myAlign('下载量',num3_wandoujia),'\t丨',myAlign('好评率',num4_wandoujia),'\t丨')
 	print(''.ljust(num_total*2, '-')+'------')
 	url_app_store = 'https://www.wandoujia.com/category/app'
@@ -171,15 +180,19 @@ def wandoujia():
 				#print(intro)
 				#print(name,'\t丨',type,'\t丨',intro,'\t丨',app_url,'\t丨',down,'\t丨',mark)
 				#print("{0:{4}^5}\t丨{1:{4}^3}\t丨{2:{4}^3}\t丨{3:{4}^3}丨".format(myAlign(name,5),myAlign(type,3),myAlign(down,3),myAlign(mark,3),chr(12288)))
-				print(myAlign(name,num1)+'丨'+myAlign(type,num2)+'丨'+myAlign(down,num3)+'丨'+myAlign(mark,num4)+'丨')
+				#print(myAlign(name,num1)+'丨'+myAlign(type,num2)+'丨'+myAlign(down,num3)+'丨'+myAlign(mark,num4)+'丨')
 				#time.sleep(1)
 
 
 def baidu():
+	judg= os.path.exists('C:\\Users\\hasee\\Desktop\\spider\\apk.db') and os.path.exists('C:\\Users\\hasee\\Desktop\\spider\\apk.bloom') and os.path.exists('C:\\Users\\hasee\\Desktop\\spider\\download')
+	if judg == 0:
+		print('请初始化')
+		return
 	global total_num
 	bf = BloomFilter.fromfile(open('C:\\Users\\hasee\\Desktop\\spider\\apk.bloom','rb'))
-	print(myAlign('名称',num1)+'丨'+myAlign('分类',num2)+'丨'+myAlign('下载量',num3)+'丨'+myAlign('好评率',num4)+'丨')
-	print(''.ljust(num_total*2, '-')+'------')
+	#print(myAlign('名称',num1)+'丨'+myAlign('分类',num2)+'丨'+myAlign('下载量',num3)+'丨'+myAlign('好评率',num4)+'丨')
+	#print(''.ljust(num_total*2, '-')+'------')
 	url_app_store = 'https://shouji.baidu.com/software/'
 	res = requests.get(url_app_store)
 	soup = BeautifulSoup(res.text, 'html.parser')
@@ -211,7 +224,7 @@ def baidu():
 				dl_url = soup2.select('.area-download a')[1]['href']
 				#print(isinstance(dl_url,str))				
 				version = soup2.select('.detail span')[1].text[3:]
-				if bf.add(app_url) == False:
+				if (app_url in bf) == False:
 					dl_path='C:\\Users\\hasee\\Desktop\\spider\\download\\'+name+'.apk'
 					sql_bd2='update total_info set current =\''+dl_url+'\''
 					sql_bd3='''update total_info set current = '0' '''
@@ -222,12 +235,14 @@ def baidu():
 					c.execute(sql_bd2)
 					conn.commit()
 					conn.close()
+					print('正在下载',name)
 					if url_bd == '0':
 						insert_values(name,app_url,type,intro,down,mark,version)
 						download(dl_url,dl_path)
 						total_num+=1
 					else:
 						download(url_bd,dl_path)
+					bf.add(app_url)
 					sql_bd1='update total_info set num ='+str(total_num)
 					conn = sqlite3.connect(DB_PATH)
 					c = conn.cursor()
@@ -235,14 +250,14 @@ def baidu():
 					c.execute(sql_bd3)
 					conn.commit()
 					conn.close()
+					bf.tofile( open('C:\\Users\\hasee\\Desktop\\spider\\apk.bloom','wb'))
 				#print(version)
 				#print(name,'\t丨',type,'\t丨',intro,'\t丨',app_url,'\t丨',down,'\t丨',mark)
 				#print("{0:{4}^5}\t丨{1:{4}^3}\t丨{2:{4}^3}\t丨{3:{4}^3}丨".format(myAlign(name,5),myAlign(type,3),myAlign(down,3),myAlign(mark,3),chr(12288)))
 				#print(name,'丨',type,'丨',down,'丨',mark,'丨')
-				print(myAlign(name,num1)+'丨'+myAlign(type,num2)+'丨'+myAlign(down,num3)+'丨'+myAlign(mark,num4)+'丨')
+				#print(myAlign(name,num1)+'丨'+myAlign(type,num2)+'丨'+myAlign(down,num3)+'丨'+myAlign(mark,num4)+'丨')
 				#time.sleep(1)
-	bf.tofile( open('C:\\Users\\hasee\\Desktop\\spider\\apk.bloom','wb'))
-
+	
 
 def huawei():
 	print(myAlign('名称',num1)+'丨'+myAlign('分类',num2)+'丨'+myAlign('下载量',num3)+'丨'+myAlign('好评率',num4)+'丨')
@@ -285,10 +300,15 @@ def huawei():
 
 
 if __name__ == '__main__':
-	#url = r'https://android-apps.pp.cn/fs08/2018/09/04/4/1_0dab19767ba94cd0228fe28ca8257d10.apk?yingid=pp_client&packageid=600711252&md5=d40b601f505f3bf9d8a05ae923cd9951&minSDK=14&size=50253582&shortMd5=56bb826e001ef697cdb5108757aa0915&crc32=3026784706'
-	#path = r'C:\\Users\\hasee\\Desktop\\spider\\download\\1.apk'
-	#download(url, path)
-	#wandoujia()
-	init()
-	baidu()
-	#huawei()
+	choice=-1
+	while choice!=0:
+		sys.stdout.write('1.初始化\n2.爬取市场\n3.归归归归归零！\n')
+		choice = int(input("做出你的选择: "))		
+		os.system('cls')
+		if choice==1:
+			init()
+		elif choice==3:
+			guiguiguiguigui0()
+		elif choice ==2:
+			baidu()
+		time.sleep(1)
